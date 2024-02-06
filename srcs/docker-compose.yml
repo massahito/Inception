@@ -1,0 +1,8 @@
+version: '3'
+services:
+  nginx:
+    build: ./requirements/nginx
+  wordpress:
+    build: ./requirements/wordpress
+  marinadb:
+    build: ./requirements/marinadb
