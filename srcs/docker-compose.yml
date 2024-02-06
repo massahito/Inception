@@ -1,8 +1,16 @@
 version: '3'
 services:
   nginx:
-    build: ./requirements/nginx
+    build:
+      context: .
+      dockerfile: ./requirements/nginx/Dockerfile
+    ports:
+      - "443:80"
   wordpress:
-    build: ./requirements/wordpress
+    build:
+      context: .
+      dockerfile: ./requirements/wordpress/Dockerfile
   marinadb:
-    build: ./requirements/marinadb
+    build:
+      context: .
+      dockerfile: ./requirements/marinadb/Dockerfile
