@@ -5,12 +5,31 @@ services:
       context: .
       dockerfile: ./requirements/nginx/Dockerfile
     ports:
-      - "443:80"
+      - "443:443"
+    depends_on:
+      - wordpress
+    restart: always
+    container_name: nginx
+
   wordpress:
     build:
       context: .
       dockerfile: ./requirements/wordpress/Dockerfile
-  marinadb:
+    depends_on:
+      - mariadb
+    #restart: always
+    container_name: wordpress
+
+  mariadb:
     build:
       context: .
-      dockerfile: ./requirements/marinadb/Dockerfile
+      dockerfile: ./requirements/mariadb/Dockerfile
+    volumes:
+      - /var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=wordpress
+    #restart: always
+    container_name: mariadb
