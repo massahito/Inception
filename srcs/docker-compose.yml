@@ -4,21 +4,28 @@ services:
     build:
       context: .
       dockerfile: ./requirements/nginx/Dockerfile
+    volumes:
+      - ./requirements/wordpress/data:/var/www/html
     ports:
       - "443:443"
     depends_on:
       - wordpress
     restart: always
-    container_name: nginx
+    container_name: web_nginx
 
   wordpress:
-    build:
-      context: .
-      dockerfile: ./requirements/wordpress/Dockerfile
+    image: wordpress:php7.3-fpm
+    environment:
+      - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
+      - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
+      - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}
+      - WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME}
+    volumes:
+      - ./requirements/wordpress/data:/var/www/html
     depends_on:
       - mariadb
-    #restart: always
-    container_name: wordpress
+    restart: always
+    container_name: app_wordpress
 
   mariadb:
     build:
@@ -30,6 +37,6 @@ services:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=wordpress
-    #restart: always
-    container_name: mariadb
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    restart: always
+    container_name: db_mariadb
