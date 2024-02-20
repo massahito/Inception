@@ -1,3 +1,3 @@
 SRC		=	srcs/docker-compose.yml
 all:
-	docker-compose -f ${SRC} up --build
+	docker compose -f ${SRC} up --build

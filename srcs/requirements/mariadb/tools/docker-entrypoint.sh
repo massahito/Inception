@@ -9,13 +9,15 @@ fi
 	--expire-logs-days=0 \
 	--loose-innodb_buffer_pool_load_at_startup=0 &
 PID=$!
-sleep 5
+sleep 3
+
 mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';"
-mysql -e "CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'app_wordpress.srcs_default' IDENTIFIED BY '${MYSQL_PASSWORD}';"
+mysql -e "CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'${WORDPRESS_HOST_NAME}' IDENTIFIED BY '${MYSQL_PASSWORD}';"
 mysql -e "CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE}"
-mysql -e "GRANT ALL PRIVILEGES ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'app_wordpress.srcs_default';"
+mysql -e "GRANT ALL PRIVILEGES ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'${WORDPRESS_HOST_NAME}';"
 mysql -e "FLUSH PRIVILEGES;"
 sed -i -e 's/^bind-address/#bind-address/' /etc/mysql/mariadb.conf.d/50-server.cnf
+
 kill $!
 wait $!
 exec "$@"
