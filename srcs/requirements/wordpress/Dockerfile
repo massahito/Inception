@@ -4,7 +4,7 @@ RUN	apt install -y php-fpm wordpress wget zip
 RUN	wget https://wordpress.org/latest.zip && unzip -d /var/www latest.zip
 COPY	./requirements/wordpress/tools/www.conf /etc/php/7.4/fpm/pool.d
 COPY	./requirements/wordpress/tools/docker-entrypoint.sh /usr/local/bin/
-RUN	mkdir -p /etc/php-fpm.d && echo "user = nginx\ngroup = nginx\nlisten = 127.0.0.1:9000" > /etc/php-fpm.d/www.conf
+RUN	wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
 RUN	mkdir -p /run/php 
 RUN	chmod +x /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT	["docker-entrypoint.sh"]
