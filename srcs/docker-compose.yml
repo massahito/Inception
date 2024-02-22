@@ -19,10 +19,17 @@ services:
     container_name: ${NGINX_CONTAINER_NAME}
 
   wordpress:
-    image: wordpress:php7.3-fpm
+    build:
+      context: .
+      dockerfile: ./requirements/wordpress/Dockerfile
+    #image: wordpress:php7.3-fpm
     networks:
-      - frontend
-      - backend
+      frontend:
+        aliases:
+          - frontend-network
+      backend:
+        aliases:
+          - backend-network
     volumes:
       - ./requirements/wordpress/data:/var/www/html
     environment:
