@@ -3,5 +3,5 @@ all:
 	docker compose -f ${SRC} up --build
 clean:
 	docker compose -f ${SRC} down 
-fclean:
+fclean: clean
 	sudo rm -rf ${HOME}/data
