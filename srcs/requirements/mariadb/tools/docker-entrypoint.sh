@@ -1,6 +1,9 @@
 #!/bin/bash
 set -eux
 if [ "$(id -u)" = "0" ]; then
+	usermod -u ${USER_ID} -o mysql
+	groupmod -g ${GROUP_ID} -o mysql
+	chown -R mysql:mysql /run/mysqld /var/lib/mysql /docker-entrypoint-initdb.d docker-my.cnf
 	exec gosu mysql ${BASH_SOURCE[0]} "$@"
 fi
 
@@ -18,5 +21,5 @@ mysql -e "FLUSH PRIVILEGES;"
 
 kill $!
 wait $!
-exec "$@" --defaults-file=/etc/mysql/docker-my.cnf
+exec "$@" --defaults-file=docker-my.cnf
 
