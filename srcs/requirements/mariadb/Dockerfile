@@ -7,6 +7,7 @@ RUN	mkdir -p /run/mysqld && \
 	chmod 1777 /run/mysqld /var/lib/mysql && \
 	mkdir -p /docker-entrypoint-initdb.d && \
 	chown -R mysql:mysql /docker-entrypoint-initdb.d
+COPY	./requirements/mariadb/tools/docker-my.cnf /etc/mysql/docker-my.cnf
 COPY	./requirements/mariadb/tools/docker-entrypoint.sh /usr/local/bin/
 COPY	./requirements/mariadb/tools/init.sql /docker-entrypoint-initdb.d/
 RUN	chmod +x /usr/local/bin/docker-entrypoint.sh

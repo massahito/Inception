@@ -20,5 +20,5 @@ sed -i -e 's/^bind-address/#bind-address/' /etc/mysql/mariadb.conf.d/50-server.c
 
 kill $!
 wait $!
-exec "$@"
+exec "$@" --defaults-file=/etc/mysql/docker-my.cnf
 
