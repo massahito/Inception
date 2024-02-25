@@ -1,8 +1,8 @@
 #!/bin/bash
-set -eux
+set -ex
 if [ "$(id -u)" = "0" ]; then
-	usermod -u ${USER_ID} -o mysql
-	groupmod -g ${GROUP_ID} -o mysql
+	usermod -u ${USER_ID:-1000} -o mysql
+	groupmod -g ${GROUP_ID:-1000} -o mysql
 	chown -R mysql:mysql /run/mysqld /var/lib/mysql /docker-entrypoint-initdb.d docker-my.cnf
 	exec gosu mysql ${BASH_SOURCE[0]} "$@"
 fi
@@ -13,10 +13,24 @@ fi
 PID=$!
 sleep 3
 
+if [ ! -n ${MYSQL_ROOT_PASSWORD} ]; then
+	echo "MYSQL_ROOT_PASSWORD is unset." >&2
+	exit 1
+fi
+
 mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';"
-mysql -e "CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';"
-mysql -e "CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE}"
-mysql -e "GRANT ALL PRIVILEGES ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%';"
+
+if [ -n ${MYSQL_USER} ] || [ -n ${MYSQL_PASSWORD} ]; then
+	mysql -e "CREATE USER IF NOT EXISTS '${MYSQL_USER:?'ERROR: MYSQL_USER is unset.'}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD:?'ERROR: MYSQL_PASSWORD is unset.'}';"
+fi
+
+if [ -n ${MYSQL_DATABASE} ]; then
+	mysql -e "CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE}"
+fi
+
+if [ -n ${MYSQL_USER} ] && [ -n ${MYSQL_PASSWORD} ]; then
+	mysql -e "GRANT ALL PRIVILEGES ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%';"
+fi
 mysql -e "FLUSH PRIVILEGES;"
 
 kill $!
