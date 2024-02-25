@@ -2,6 +2,6 @@ SRC		=	srcs/docker-compose.yml
 all:
 	docker compose -f ${SRC} up --build
 clean:
-	docker compose -f ${SRC} down 
+	docker compose -f ${SRC} down -v
 fclean: clean
-	sudo rm -rf ${HOME}/data
+	rm -rf ${HOME}/data
