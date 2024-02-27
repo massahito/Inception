@@ -18,12 +18,10 @@ services:
       - wordpress
     restart: always
     container_name: ${NGINX_CONTAINER_NAME}
-
   wordpress:
     build:
       context: .
       dockerfile: ./requirements/wordpress/Dockerfile
-    #image: wordpress:php7.3-fpm
     networks:
       frontend:
         aliases:
@@ -46,7 +44,8 @@ services:
       - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}
       - WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME}
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_healthy
     restart: always
     container_name: ${WORDPRESS_CONTAINER_NAME}
 
@@ -67,6 +66,12 @@ services:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "mariadb"]
+      start_period: "15s"
+      interval: "2s"
+      timeout: "5s"
+      retries: 2
     restart: always
     container_name: ${MYSQL_CONTAINER_NAME}
 
