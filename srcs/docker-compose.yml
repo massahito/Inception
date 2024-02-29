@@ -10,7 +10,7 @@ services:
       - ./requirements/nginx/conf/server.key:/etc/nginx/ssl/server.key
       - ./requirements/nginx/conf/server.crt:/etc/nginx/ssl/server.crt
       - ./requirements/nginx/conf/default.conf:/etc/nginx/conf.d/default.conf
-      - ${HOME}/data/wordpress:/var/www/html
+      - web_files:/var/www/html
     ports:
       - "443:443"
     depends_on:
@@ -29,7 +29,7 @@ services:
         aliases:
           - backend-network
     volumes:
-      - ${HOME}/data/wordpress:/var/www/html
+      - web_files:/var/www/html
     environment:
       - USER_ID=${USER_ID}
       - GROUP_ID=${GROUP_ID}
@@ -56,7 +56,7 @@ services:
       - backend
     volumes:
       - ./requirements/mariadb/tools/docker-my.cnf:/etc/mysql/docker-my.cnf
-      - ${HOME}/data/mysql:/var/lib/docker-mysql
+      - database:/var/lib/docker-mysql
     environment:
       - USER_ID=${USER_ID}
       - GROUP_ID=${GROUP_ID}
@@ -67,12 +67,27 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "mariadb"]
-      start_period: "5s"
+      start_period: "1005s"
       interval: "2s"
       timeout: "5s"
       retries: 2
     restart: always
     container_name: ${MYSQL_CONTAINER_NAME}
+  dnsmasq:
+    image: 4km3/dnsmasq
+    environment:
+      TZ: "Asia/Tokyo"
+    ports:
+      - "5553:53/udp"
+      - "5553:53/tcp"
+    volumes:
+      - ./requirements/dnsmasq/dnsmasq.d:/etc/dnsmasq.d
+    dns:
+      - 8.8.8.8
+      - 127.0.0.1
+    cap_add:
+      - NET_ADMIN
+    container_name: mydnsmasq
 
 networks:
   frontend:
@@ -81,3 +96,15 @@ networks:
   backend:
     name: ${BACKEND_NETWORK_NAME}
     driver: bridge
+
+volumes:
+  database:
+    driver_opts:
+      type: none
+      device: ${HOME}/data/mysql
+      o: bind
+  web_files:
+    driver_opts:
+      type: none
+      device: ${HOME}/data/wordpress
+      o: bind
