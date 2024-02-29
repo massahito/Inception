@@ -15,7 +15,7 @@
 #user                    = mysql
 pid-file                = /run/mysqld/mysqld.pid
 basedir                 = /usr
-#datadir                 = /var/lib/mysql
+datadir                 = /var/lib/docker-mysql/data
 #tmpdir                  = /tmp
 
 # Broken reverse DNS slows down connections considerably and name resolve is

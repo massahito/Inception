@@ -13,7 +13,6 @@ services:
       - ${HOME}/data/wordpress:/var/www/html
     ports:
       - "443:443"
-      - "80:80"
     depends_on:
       - wordpress
     restart: always
@@ -57,7 +56,7 @@ services:
       - backend
     volumes:
       - ./requirements/mariadb/tools/docker-my.cnf:/etc/mysql/docker-my.cnf
-      - /var/lib/mysql
+      - ${HOME}/data/mysql:/var/lib/docker-mysql
     environment:
       - USER_ID=${USER_ID}
       - GROUP_ID=${GROUP_ID}
@@ -68,7 +67,7 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "mariadb"]
-      start_period: "15s"
+      start_period: "5s"
       interval: "2s"
       timeout: "5s"
       retries: 2

@@ -4,4 +4,4 @@ all:
 clean:
 	docker compose -f ${SRC} down -v
 fclean: clean
-	rm -rf ${HOME}/data
+	rm -rf ${HOME}/data/wordpress/* ${HOME}/data/mysql/*

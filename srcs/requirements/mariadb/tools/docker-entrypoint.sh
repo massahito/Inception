@@ -3,11 +3,17 @@ set -ex
 if [ "$(id -u)" = "0" ]; then
 	usermod -u ${USER_ID:-1000} -o mysql
 	groupmod -g ${GROUP_ID:-1000} -o mysql
-	chown -R mysql:mysql /run/mysqld /var/lib/mysql /docker-entrypoint-initdb.d docker-my.cnf
+	mkdir -p /var/lib/docker-mysql/data
+	chown -R mysql:mysql /run/mysqld /var/lib/mysql /docker-entrypoint-initdb.d docker-my.cnf /var/lib/docker-mysql
+	mariadb-install-db --user=mysql --datadir=/var/lib/docker-mysql/data
 	exec gosu mysql ${BASH_SOURCE[0]} "$@"
 fi
 
-"$@" --skip-networking --default-time-zone=SYSTEM --wsrep_on=OFF \
+if [ ! "$(ls -R /var/lib/docker-mysql/data)" ]; then
+	mariadb-install-db --user=mysql --datadir=/var/lib/docker-mysql/data
+fi
+
+"$@" --datadir=/var/lib/docker-mysql/data --skip-networking --default-time-zone=SYSTEM --wsrep_on=OFF \
 	--expire-logs-days=0 \
 	--loose-innodb_buffer_pool_load_at_startup=0 &
 PID=$!
