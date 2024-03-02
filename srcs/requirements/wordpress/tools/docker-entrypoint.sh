@@ -15,13 +15,20 @@ function install_wordpress_core() {
 	fi
 }
 
+function create_user() {
+	if [ -n ${WORDPRESS_USER_NAME} ] || [ -n ${WORDPRESS_USER_PASSWORD} ] || [ -n ${WORDPRESS_USER_EMAIL} ]; then
+		gosu wordpress wp user create ${WORDPRESS_USER_NAME:?'ERROR: WORDPRESS_USER_NAME is not set.'} ${WORDPRESS_USER_EMAIL:?'ERROR: WORDPRESS_USER_EMAL is not set.'} --user_pass=${WORDPRESS_USER_PASSWORD:?'ERROR: WORDPRESS_USER_PASSWORD is not set.'} --role=author
+	fi
+}
+
 groupmod -g ${GROUP_ID:-1000} -o wordpress
 usermod -u ${USER_ID:-1000} -g wordpress -o wordpress
-chown -R wordpress:wordpress /run/php /var/www/html /var/www/wordpress /docker /var/log/
+chown -R wordpress:wordpress /run/php /var/www/html /var/www/wordpress /docker /var/log
 if [ ! -e /var/www/html/wp-config.php ]; then
 	cp -rf /var/www/wordpress/* /var/www/html/
 	chown -R wordpress:wordpress /var/www/html
 	create_wordpress_config
 	install_wordpress_core
+	create_user
 fi
 exec gosu wordpress "$@" -F -y /docker/docker-www.conf
