@@ -19,6 +19,10 @@ fi
 PID=$!
 sleep 3
 
+if [ -f  /docker/init.sql ]; then
+	mysql -e < /docker/init.sql
+fi
+
 if [ ! -n ${MYSQL_ROOT_PASSWORD} ]; then
 	echo "MYSQL_ROOT_PASSWORD is unset." >&2
 	exit 1

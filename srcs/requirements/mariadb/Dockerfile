@@ -8,7 +8,6 @@ RUN	mkdir -p /run/mysqld && \
 COPY	./tools/docker-my.cnf docker-my.cnf
 COPY	./tools/docker-entrypoint.sh /usr/local/bin/
 RUN	chmod +x /usr/local/bin/docker-entrypoint.sh
-COPY	./tools/init.sql /docker-entrypoint-initdb.d/
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD	["mariadbd"]
