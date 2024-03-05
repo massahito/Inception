@@ -1,22 +1,60 @@
 #!/bin/bash
-set -eux
+set -ex
 if [ "$(id -u)" = "0" ]; then
+	usermod -u ${USER_ID:-1000} -o mysql
+	groupmod -g ${GROUP_ID:-1000} -o mysql
+	mkdir -p /var/lib/docker-mysql/data
+	chown -R mysql:mysql /run/mysqld /var/lib/mysql /docker-entrypoint-initdb.d docker-my.cnf /var/lib/docker-mysql
+	mariadb-install-db --user=mysql --datadir=/var/lib/docker-mysql/data
 	exec gosu mysql ${BASH_SOURCE[0]} "$@"
 fi
 
-"$@" --skip-networking --default-time-zone=SYSTEM --wsrep_on=OFF \
+if [ ! "$(ls -R /var/lib/docker-mysql/data)" ]; then
+	mariadb-install-db --user=mysql --datadir=/var/lib/docker-mysql/data
+fi
+
+"$@" --datadir=/var/lib/docker-mysql/data --skip-networking --default-time-zone=SYSTEM --wsrep_on=OFF \
 	--expire-logs-days=0 \
 	--loose-innodb_buffer_pool_load_at_startup=0 &
 PID=$!
-sleep 3
+count=0
+set +e
+while ! mysqladmin ping -h localhost; do
+	if [ $count -gt 10 ]; then
+		echo "ERROR: cannnot start mariadbd." >&2
+		exit 1
+	fi
+	sleep 1
+	let count=$(count)+1
+	echo "waiting for mariadb daemon is starting..."
+done
+set -e
+
+if [ -f  /docker/init.sql ]; then
+	mysql -e < /docker/init.sql
+fi
+
+if [ ! -n ${MYSQL_ROOT_PASSWORD} ]; then
+	echo "MYSQL_ROOT_PASSWORD is unset." >&2
+	exit 1
+fi
 
 mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';"
-mysql -e "CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';"
-mysql -e "CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE}"
-mysql -e "GRANT ALL PRIVILEGES ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%';"
+
+if [ -n ${MYSQL_USER} ] || [ -n ${MYSQL_PASSWORD} ]; then
+	mysql -e "CREATE USER IF NOT EXISTS '${MYSQL_USER:?'ERROR: MYSQL_USER is unset.'}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD:?'ERROR: MYSQL_PASSWORD is unset.'}';"
+fi
+
+if [ -n ${MYSQL_DATABASE} ]; then
+	mysql -e "CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE}"
+fi
+
+if [ -n ${MYSQL_USER} ] && [ -n ${MYSQL_PASSWORD} ]; then
+	mysql -e "GRANT ALL PRIVILEGES ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%';"
+fi
 mysql -e "FLUSH PRIVILEGES;"
 
 kill $!
 wait $!
-exec "$@" --defaults-file=/etc/mysql/docker-my.cnf
+exec "$@" --defaults-file=docker-my.cnf
 
