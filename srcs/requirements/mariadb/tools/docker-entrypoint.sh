@@ -17,7 +17,18 @@ fi
 	--expire-logs-days=0 \
 	--loose-innodb_buffer_pool_load_at_startup=0 &
 PID=$!
-sleep 3
+count=0
+set +e
+while ! mysqladmin ping -h localhost; do
+	if [ $count -gt 10 ]; then
+		echo "ERROR: cannnot start mariadbd." >&2
+		exit 1
+	fi
+	sleep 1
+	let count=$(count)+1
+	echo "waiting for mariadb daemon is starting..."
+done
+set -e
 
 if [ -f  /docker/init.sql ]; then
 	mysql -e < /docker/init.sql

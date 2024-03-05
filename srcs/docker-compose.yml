@@ -19,6 +19,7 @@ services:
       - wordpress
     restart: always
     container_name: ${NGINX_CONTAINER_NAME}
+
   wordpress:
     image: wordpress
     build:
@@ -74,10 +75,10 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "mariadb"]
-      start_period: "1005s"
+      start_period: "15s"
       interval: "2s"
       timeout: "5s"
-      retries: 2
+      retries: 3
     restart: always
     container_name: ${MYSQL_CONTAINER_NAME}
 
