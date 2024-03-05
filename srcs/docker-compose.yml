@@ -3,8 +3,8 @@ services:
   nginx:
     image: nginx
     build:
-      context: .
-      dockerfile: ./requirements/nginx/Dockerfile
+      context: ./requirements/nginx
+      dockerfile: Dockerfile
     networks:
       - frontend
     volumes:
@@ -22,8 +22,8 @@ services:
   wordpress:
     image: wordpress
     build:
-      context: .
-      dockerfile: ./requirements/wordpress/Dockerfile
+      context: ./requirements/wordpress
+      dockerfile: Dockerfile
     networks:
       frontend:
         aliases:
@@ -57,8 +57,8 @@ services:
   mariadb:
     image: mariadb
     build:
-      context: .
-      dockerfile: ./requirements/mariadb/Dockerfile
+      context: ./requirements/mariadb
+      dockerfile: Dockerfile
     networks:
       - backend
     volumes:
